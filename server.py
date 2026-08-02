@@ -110,13 +110,24 @@ def getMessage():
     bot.process_new_updates([update])
     return "!", 200
 
+import time # أضف هذا السطر في أعلى الملف مع باقي الواردات (imports)
+
+# ... (باقي الكود كما هو) ...
+
 @app.route('/setup_webhook')
 def setup_webhook():
-    bot.remove_webhook()
-    # نربط تلجرام برابط Render الخاص بك
-    bot.set_webhook(url='https://tiktok-crisp-backend.onrender.com/' + TOKEN)
-    return "✅ تم تفعيل البوت بنجاح! يمكنك الآن الذهاب للتلجرام والضغط على /start", 200
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    try:
+        # نحذف أي اتصال قديم
+        bot.remove_webhook()
+        
+        # ننتظر ثانية واحدة لكي تستوعب سيرفرات تلجرام الأمر
+        time.sleep(1) 
+        
+        # نربط تلجرام برابط Render الخاص بك
+        bot.set_webhook(url='https://tiktok-crisp-backend.onrender.com/' + TOKEN)
+        
+        return "✅ تم تفعيل البوت بنجاح! يمكنك الآن الذهاب للتلجرام والضغط على /start", 200
+    
+    except Exception as e:
+        # إذا حدث خطأ، سيتم طباعته على الشاشة بدلاً من الخطأ 500
+        return f"❌ فشل الاتصال بتلجرام، السبب: {str(e)}", 500
