@@ -10,7 +10,7 @@ import time
 # ==========================================
 # ضع التوكن الجديد الخاص بك بين علامتي التنصيص هنا
 TOKEN = "8662213304:AAFtfPDot3NYCEQZ5GXrVK25REUMmqvg254" 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(TOKEN, threaded=False)
 app = Flask(__name__)
 CORS(app)
 
