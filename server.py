@@ -5,7 +5,7 @@ import sqlite3
 import os
 
 # الإعدادات الأساسية
-TOKEN = "8662213304:AAFtfPDot3NYCEQZ5GXrVK25REUMmqvq254"
+TOKEN = "8662213304:AAFtfPDot3NYCEQZ5GXrVK25REUMmqvg254"
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 CORS(app)
