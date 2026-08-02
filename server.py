@@ -138,3 +138,16 @@ threading.Thread(target=run_bot, daemon=True).start()
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+    # ==========================================
+# 5. تشغيل السيرفر والبوت معاً
+# ==========================================
+def run_bot():
+    bot.infinity_polling()
+
+# هذا السطر يجب أن يكون خارج (فوق) جملة if __name__ لكي يقرأه السيرفر
+threading.Thread(target=run_bot, daemon=True).start()
+
+if __name__ == '__main__':
+    # تشغيل سيرفر الـ API
+    print("🚀 Server is running...")
+    app.run(host='0.0.0.0', port=5000)
