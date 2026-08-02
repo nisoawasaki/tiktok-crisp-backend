@@ -2,7 +2,6 @@ import telebot
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sqlite3
-import threading
 import os
 
 # الإعدادات الأساسية
@@ -11,9 +10,7 @@ bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 CORS(app)
 
-# إعداد قاعدة البيانات
 def get_db_connection():
-    # السماح باستخدام الاتصال بسلاسة عبر Render
     conn = sqlite3.connect('users.db', check_same_thread=False)
     return conn
 
@@ -55,22 +52,6 @@ def send_welcome(message):
         welcome_msg = f"أهلاً بعودتك! 👋\n🔑 كود الدخول الخاص بك هو:\n`{user[1]}`"
         bot.reply_to(message, welcome_msg, parse_mode="Markdown")
     conn.close()
-
-@bot.message_handler(commands=['upgrade'])
-def upgrade_user(message):
-    try:
-        target_token = message.text.split()[1]
-        conn = get_db_connection()
-        c = conn.cursor()
-        c.execute("UPDATE users SET is_premium=1 WHERE token=?", (target_token,))
-        if c.rowcount > 0:
-            bot.reply_to(message, f"✅ تم تفعيل حساب {target_token} إلى PRO بنجاح!")
-        else:
-            bot.reply_to(message, "❌ لم يتم العثور على هذا الكود.")
-        conn.commit()
-        conn.close()
-    except:
-        bot.reply_to(message, "الاستخدام الصحيح: /upgrade TG-XXXXX")
 
 # ==========================================
 # مسارات الـ API (للاتصال بالإضافة)
@@ -119,35 +100,23 @@ def api_use_tool():
         conn.close()
         return jsonify({"allowed": False, "error": "No trials left"})
 
-def run_bot():
-    bot.infinity_polling()
-
-if __name__ == '__main__':
-    threading.Thread(target=run_bot, daemon=True).start()
-    # ضبط المنفذ الديناميكي الخاص بمنصة Render
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
-    # ... (باقي الكود في الأعلى كما هو بدون تغيير)
-
-def run_bot():
-    bot.infinity_polling()
-
-# التعديل هنا: أخرجنا أمر التشغيل لكي يبدأ تلقائياً مع السيرفر
-threading.Thread(target=run_bot, daemon=True).start()
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
-    # ==========================================
-# 5. تشغيل السيرفر والبوت معاً
 # ==========================================
-def run_bot():
-    bot.infinity_polling()
+# نظام Webhook لربط التلجرام بالسيرفر
+# ==========================================
+@app.route('/' + TOKEN, methods=['POST'])
+def getMessage():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "!", 200
 
-# هذا السطر يجب أن يكون خارج (فوق) جملة if __name__ لكي يقرأه السيرفر
-threading.Thread(target=run_bot, daemon=True).start()
+@app.route('/setup_webhook')
+def setup_webhook():
+    bot.remove_webhook()
+    # نربط تلجرام برابط Render الخاص بك
+    bot.set_webhook(url='https://tiktok-crisp-backend.onrender.com/' + TOKEN)
+    return "✅ تم تفعيل البوت بنجاح! يمكنك الآن الذهاب للتلجرام والضغط على /start", 200
 
 if __name__ == '__main__':
-    # تشغيل سيرفر الـ API
-    print("🚀 Server is running...")
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
