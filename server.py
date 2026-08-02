@@ -127,3 +127,14 @@ if __name__ == '__main__':
     # ضبط المنفذ الديناميكي الخاص بمنصة Render
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+    # ... (باقي الكود في الأعلى كما هو بدون تغيير)
+
+def run_bot():
+    bot.infinity_polling()
+
+# التعديل هنا: أخرجنا أمر التشغيل لكي يبدأ تلقائياً مع السيرفر
+threading.Thread(target=run_bot, daemon=True).start()
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
